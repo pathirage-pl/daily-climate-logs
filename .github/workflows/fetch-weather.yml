@@ -1,0 +1,30 @@
+name: Fetch Noon Weather Data
+
+on:
+  schedule:
+    - cron: '0 12 * * *' 
+  workflow_dispatch:
+
+jobs:
+  fetch_weather:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Create data directory
+        run: mkdir -p weather_data
+
+      - name: Fetch current weather for sample cities (London, Tokyo, New York)
+        run: |
+          curl -s "https://wttr.in/London?format=j1" > weather_data/london_weather.json
+          curl -s "https://wttr.in/Tokyo?format=j1" > weather_data/tokyo_weather.json
+          curl -s "https://wttr.in/New+York?format=j1" > weather_data/newyork_weather.json
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "Weather Data Bot"
+          git config --global user.email "action@github.com"
+          git add weather_data/
+          git commit -m "Update daily weather logs" || exit 0
+          git push
